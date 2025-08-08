@@ -10,10 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import and_, desc, asc
 
-from app.database import get_session
-from app.models import Task, User
-from app.schemas import TaskCreate, TaskRead, TaskBase
-from app.auth.deps import get_current_user
+from database import get_session
+from models import Task, User
+from schemas import TaskCreate, TaskRead, TaskBase
+from auth.deps import get_current_user
 
 router = APIRouter()
 
@@ -241,3 +241,4 @@ async def delete_task(
 
     await session.delete(task)
     await session.commit()
+
