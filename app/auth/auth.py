@@ -4,10 +4,10 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.database import get_session
-from app.models import User
-from app.schemas import UserCreate
-from app.security import (
+from database import get_session
+from models import User
+from schemas import UserCreate
+from security import (
     hash_password,
     verify_password,
     create_access_token,
@@ -78,3 +78,4 @@ async def login(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
