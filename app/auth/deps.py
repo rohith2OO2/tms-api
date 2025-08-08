@@ -4,9 +4,9 @@ from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.config import get_settings
-from app.database import get_session
-from app.models import User
+from config import get_settings
+from database import get_session
+from models import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 settings = get_settings()
@@ -38,3 +38,4 @@ async def get_current_user(
     if user is None:
         raise credentials_exception
     return user
+
