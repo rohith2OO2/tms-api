@@ -97,7 +97,7 @@ async def get_tasks(
 
     # Import inside function to avoid circular dependencies
     from sqlalchemy.orm import joinedload
-    from app.models import Project
+    from models import Project
 
     stmt = (
         select(Task)
@@ -241,5 +241,6 @@ async def delete_task(
 
     await session.delete(task)
     await session.commit()
+
 
 
