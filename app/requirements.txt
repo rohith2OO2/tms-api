@@ -20,6 +20,8 @@ redis>=4.5.1                      # Redis client
 sendgrid>=6.10.0                  # Email sending
 
 python-dotenv>=1.0.0              # .env file loader
+python-multipart>=0.0.5  # For FastAPI Form and file parsing
 
 pytest>=7.3.1                     # Testing (optional)
 httpx>=0.24.1                     # HTTP client for testing
+
