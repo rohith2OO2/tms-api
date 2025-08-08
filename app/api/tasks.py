@@ -143,7 +143,7 @@ async def get_task(
     """
     Retrieve a single task if it belongs to a project owned by current user.
     """
-    from app.models import Project
+    from models import Project
 
     stmt = (
         select(Task)
@@ -178,7 +178,7 @@ async def update_task(
     """
     Update fields of a task if it belongs to current user's project.
     """
-    from app.models import Project
+    from models import Project
 
     stmt = (
         select(Task)
@@ -220,7 +220,7 @@ async def delete_task(
     """
     Delete a task if it belongs to a project owned by current user.
     """
-    from app.models import Project
+    from models import Project
 
     stmt = (
         select(Task)
@@ -241,4 +241,5 @@ async def delete_task(
 
     await session.delete(task)
     await session.commit()
+
 
