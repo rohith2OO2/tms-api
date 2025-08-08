@@ -3,7 +3,7 @@ from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from typing import Optional
 
-from app.config import get_settings
+from config import get_settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -51,3 +51,4 @@ def decode_access_token(token: str) -> Optional[dict]:
         return decoded
     except JWTError:
         return None
+
