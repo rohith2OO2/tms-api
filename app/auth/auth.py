@@ -12,7 +12,7 @@ from security import (
     verify_password,
     create_access_token,
 )
-from app.config import get_settings
+from config import get_settings
 
 router = APIRouter()
 
@@ -78,4 +78,5 @@ async def login(
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
 
