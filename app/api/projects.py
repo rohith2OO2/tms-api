@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
-from app.database import get_session
-from app.models import Project, User
-from app.schemas import ProjectCreate, ProjectRead
-from app.auth.deps import get_current_user
+from database import get_session
+from models import Project, User
+from schemas import ProjectCreate, ProjectRead
+from auth.deps import get_current_user
 
 router = APIRouter()
 
@@ -146,3 +146,4 @@ async def delete_project(
 
     await session.delete(project)
     await session.commit()
+
