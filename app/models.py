@@ -10,7 +10,7 @@ from sqlalchemy import (
     Date
 )
 from sqlalchemy.orm import relationship
-from app.database import Base
+from database import Base
 
 
 class TaskStatus(str, enum.Enum):
@@ -141,3 +141,4 @@ class Task(Base):
         "User",
         back_populates="tasks"
     )
+
