@@ -71,7 +71,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    user: "1000:1000"  # run as non-root user (ensure created in Dockerfile)
+    user: "1000:1000"
 
 volumes:
   pgdata:
