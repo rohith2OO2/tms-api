@@ -1,47 +1,80 @@
-from celery import Celery
-from celery.schedules import crontab
-from app.services.email import send_email
-from app.database import SessionLocal
-from app import models
-import os
-from datetime import datetime
+# app/api/tasks.py
 
-celery = Celery(
-    "tasks",
-    broker=os.getenv("REDIS_URL", "redis://redis:6379/0"),
-    backend=os.getenv("REDIS_URL", "redis://redis:6379/0")
-)
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from app import models, schemas
+from app.database import get_db
+from app.celery_app.tasks import send_email_task
 
-@celery.task
-def send_email_task(to_email: str, subject: str, body: str):
-    send_email(to_email, subject, body)
+router = APIRouter()
 
-@celery.task
-def send_overdue_summary():
-    """Send daily summary of overdue tasks to each user."""
-    db = SessionLocal()
-    today = datetime.utcnow().date()
-    
-    users = db.query(models.User).all()
-    for user in users:
-        overdue_tasks = db.query(models.Task).filter(
-            models.Task.assigned_to == user.id,
-            models.Task.due_date < today,
-            models.Task.status != "completed"
-        ).all()
+@router.post("/tasks", response_model=schemas.Task)
+def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
+    """Create a new task and notify the assigned user via email."""
+    task = models.Task(**task_in.dict())
+    db.add(task)
+    db.commit()
+    db.refresh(task)
 
-        if overdue_tasks:
-            task_list = "\n".join([f"- {t.title} (due {t.due_date})" for t in overdue_tasks])
-            body = f"Hello {user.name},\n\nYou have overdue tasks:\n{task_list}"
-            send_email_task.delay(user.email, "Daily Overdue Task Summary", body)
+    # Send assignment email
+    if task.assigned_to_email:
+        send_email_task.delay(
+            to_email=task.assigned_to_email,
+            subject="New Task Assigned",
+            body=f"You have been assigned a new task: '{task.title}' with due date {task.due_date}."
+        )
 
-    db.close()
+    return task
 
-# Celery Beat schedule
-celery.conf.beat_schedule = {
-    "send-overdue-summary-every-day": {
-        "task": "app.celery_app.tasks.send_overdue_summary",
-        "schedule": crontab(hour=9, minute=0),  # every day at 9:00 UTC
-    },
-}
-celery.conf.timezone = "UTC"
+
+@router.get("/tasks", response_model=List[schemas.Task])
+def list_tasks(db: Session = Depends(get_db)):
+    """List all tasks."""
+    return db.query(models.Task).all()
+
+
+@router.get("/tasks/{task_id}", response_model=schemas.Task)
+def get_task(task_id: int, db: Session = Depends(get_db)):
+    """Get a single task by ID."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task
+
+
+@router.patch("/tasks/{task_id}", response_model=schemas.Task)
+def update_task(task_id: int, task_in: schemas.TaskUpdate, db: Session = Depends(get_db)):
+    """Update a task and notify the user if status changes."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    old_status = task.status
+
+    for key, value in task_in.dict(exclude_unset=True).items():
+        setattr(task, key, value)
+
+    db.commit()
+    db.refresh(task)
+
+    # Notify if status changed
+    if task.status != old_status and task.assigned_to_email:
+        send_email_task.delay(
+            to_email=task.assigned_to_email,
+            subject="Task Status Updated",
+            body=f"Your task '{task.title}' status has been updated to '{task.status}'."
+        )
+
+    return task
+
+
+@router.delete("/tasks/{task_id}")
+def delete_task(task_id: int, db: Session = Depends(get_db)):
+    """Delete a task."""
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    db.delete(task)
+    db.commit()
+    return {"message": "Task deleted successfully"}
