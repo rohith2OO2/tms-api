@@ -17,9 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application source code
 COPY . .
 
-# --- Security: Create non-root user and group for Celery & Web ---
-RUN addgroup --gid 1000 celerygroup && \
-    adduser --uid 1000 --gid 1000 --system --group celeryuser
+# Create group and user with specific GID and UID
+RUN groupadd -g 1000 celerygroup \
+ && useradd -r -u 1000 -g celerygroup celeryuser
 
 # Switch to non-root user
 USER celeryuser
@@ -27,5 +27,5 @@ USER celeryuser
 # Expose FastAPI port
 EXPOSE 8000
 
-# Default command for web service (overridden by celery_worker in docker-compose)
+# Default command for web service (overridden for celery_worker)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
