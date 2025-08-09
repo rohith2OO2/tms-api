@@ -1,4 +1,6 @@
 from celery import Celery
+from app.email import send_email  # <-- We'll create this file
+import os
 
 celery = Celery(
     "tasks",
@@ -9,3 +11,8 @@ celery = Celery(
 @celery.task
 def example_task():
     print("This is an example task")
+
+@celery.task
+def send_email_task(to_email: str, subject: str, body: str):
+    """Send an email asynchronously using Celery."""
+    send_email(to_email, subject, body)
