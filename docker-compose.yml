@@ -58,7 +58,7 @@ services:
       context: ./app
       dockerfile: Dockerfile
     container_name: tms_celery_worker
-    command: celery -A celery_app.tasks worker --loglevel=info
+    command: celery -A celery_app.tasks worker --loglevel=info --uid=celeryuser --gid=celerygroup
     volumes:
       - ./app:/app:ro
       - ./app/requirements.txt:/app/requirements.txt:ro
