@@ -9,16 +9,23 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app source code (everything from build context, which is already /app on your host)
+# Copy application source code
 COPY . .
 
-# Expose the port FastAPI runs on
+# --- Security: Create non-root user and group for Celery & Web ---
+RUN addgroup --gid 1000 celerygroup && \
+    adduser --uid 1000 --gid 1000 --system --group celeryuser
+
+# Switch to non-root user
+USER celeryuser
+
+# Expose FastAPI port
 EXPOSE 8000
 
-# Run uvicorn as default command with reload during development
+# Default command for web service (overridden by celery_worker in docker-compose)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
