@@ -1,13 +1,14 @@
-# app/api/tasks.py
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from app import models, schemas
-from app.database import get_db
-from app.celery_app.tasks import send_email_task
+
+import models
+import schemas
+from database import get_db
+from celery_app.tasks import send_email_task
 
 router = APIRouter()
+
 
 @router.post("/tasks", response_model=schemas.Task)
 def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
@@ -22,7 +23,8 @@ def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
         send_email_task.delay(
             to_email=task.assigned_to_email,
             subject="New Task Assigned",
-            body=f"You have been assigned a new task: '{task.title}' with due date {task.due_date}."
+            body=f"You have been assigned a new task: '{task.title}' "
+                 f"with due date {task.due_date}."
         )
 
     return task
