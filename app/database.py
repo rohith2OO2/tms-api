@@ -5,22 +5,24 @@ from config import get_settings
 
 settings = get_settings()
 
+# Create the asynchronous engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=False,
+    echo=False,       # or True if you want SQL query logs
     future=True,
 )
 
+# Create async session factory
 async_session_factory = sessionmaker(
-    engine,
+    bind=engine,
     expire_on_commit=False,
     class_=AsyncSession,
 )
 
+# Base class for models
 Base = declarative_base()
 
-
+# Dependency function to get async DB session in FastAPI
 async def get_session():
     async with async_session_factory() as session:
         yield session
-
