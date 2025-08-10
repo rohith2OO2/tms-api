@@ -1,0 +1,20 @@
++-------------------+      +------------------+
+|      projects     |      |      tasks       |
++-------------------+      +------------------+
+| id (PK)           |<-----| id (PK)          |
+| name              |      | title            |
+| description       |      | description      |
+| owner_id (FK)     |      | status           |
++-------------------+      | assigned_to_email|
+                            | due_date         |
+                            | project_id (FK)  |
+                            +------------------+
+
++-------------------+
+|      users        |
++-------------------+
+| id (PK)           |
+| email             |
+| hashed_password   |
+| full_name         |
++-------------------+
