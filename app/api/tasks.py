@@ -10,8 +10,11 @@ from celery_app.tasks import send_email_task
 router = APIRouter()
 
 
-@router.post("/tasks", response_model=schemas.Task)
-def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
+@router.post("/tasks", response_model=schemas.TaskRead)
+def create_task(
+    task_in: schemas.TaskCreate,
+    db: Session = Depends(get_db)
+):
     """Create a new task and notify the assigned user via email."""
     task = models.Task(**task_in.dict())
     db.add(task)
@@ -30,13 +33,13 @@ def create_task(task_in: schemas.TaskCreate, db: Session = Depends(get_db)):
     return task
 
 
-@router.get("/tasks", response_model=List[schemas.Task])
+@router.get("/tasks", response_model=List[schemas.TaskRead])
 def list_tasks(db: Session = Depends(get_db)):
     """List all tasks."""
     return db.query(models.Task).all()
 
 
-@router.get("/tasks/{task_id}", response_model=schemas.Task)
+@router.get("/tasks/{task_id}", response_model=schemas.TaskRead)
 def get_task(task_id: int, db: Session = Depends(get_db)):
     """Get a single task by ID."""
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
@@ -45,8 +48,12 @@ def get_task(task_id: int, db: Session = Depends(get_db)):
     return task
 
 
-@router.patch("/tasks/{task_id}", response_model=schemas.Task)
-def update_task(task_id: int, task_in: schemas.TaskUpdate, db: Session = Depends(get_db)):
+@router.patch("/tasks/{task_id}", response_model=schemas.TaskRead)
+def update_task(
+    task_id: int,
+    task_in: schemas.TaskUpdate,
+    db: Session = Depends(get_db)
+):
     """Update a task and notify the user if status changes."""
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if not task:
