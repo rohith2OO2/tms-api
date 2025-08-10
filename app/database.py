@@ -8,7 +8,7 @@ settings = get_settings()
 # Create the asynchronous engine
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=False,       # or True if you want SQL query logs
+    echo=False,       # Set to True to enable SQL query logging
     future=True,
 )
 
@@ -23,6 +23,6 @@ async_session_factory = sessionmaker(
 Base = declarative_base()
 
 # Dependency function to get async DB session in FastAPI
-async def get_session():
+async def get_db():
     async with async_session_factory() as session:
         yield session
